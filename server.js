@@ -1,35 +1,31 @@
 const express = require('express');
 const app = express();
-const { createServer } = require('http');
-const { Server } = require('socket.io');
+const PORT = process.env.PORT || 4005;
+const cors = require('cors');
 const connectDb = require('./config/db');
-const PORT = process.env.PORT || 4000;
-const server = createServer(app);
 const dotenv = require('dotenv').config();
-
-
-const userRoutes = require('./routes/userRoutes')
-
-
+const userRoutes = require('./routes/userRoutes');
+const {notFound, errorHandler} = require('./middleware/errorHandlerMiddleware')
+// Middleware
 connectDb();
 app.use(express.json());
-
-const io = new Server(server, {});
-
-
-// io.on('connection', (socket)=>{
- 
-//     console.log('Hello, Socketio');
-// })
-
-// server.listen(PORT, ()=>{
-//     console.log('Server is running on', PORT)
-// })
+app.use(cors());
 
 
-app.get('/', (req,res)=>{
-     res.send('Server is running well!')
-})
-app.listen(PORT, ()=>{
-    console.log('Yay, Server is running')
-})
+
+// Routes
+app.use('/api/user', userRoutes);
+
+
+app.get('/', (req, res) => {
+    console.log('Received request on /');
+    res.send('Server is running well!');
+});
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Yay, Server is running on port ${PORT}`);
+});
+
+app.use(notFound)
+app.use(errorHandler)
